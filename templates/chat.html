@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #eef2f3;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            height: 300px;
+            width: 90%;
+            overflow-y: scroll;
+            padding: 5px;
+            background-color: #fff;
+            margin: 20px auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .message { margin: 5px 0; }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            width: calc(90% - 16px);
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Чат, привет <span id="username">{{ username }}</span></h1>
+
+    <div id="chat"></div>
+
+    <select id="recipient">
+        <!-- Здесь все пользователи будут добавлены через JS -->
+    </select>
+    <input id="message" placeholder="Сообщение" />
+    <button id="send">Отправить</button>
+
+    <script>
+        const socket = io();
+
+        $(document).ready(function() {
+            $('#send').click(function() {
+                const recipientUsername = $('#recipient').val();
+                const message = $('#message').val();
+                const senderUsername = '{{ username }}';
+
+                if (recipientUsername && message) {
+                    socket.emit('personal_message', { sender: senderUsername, recipient: recipientUsername, content: message });
+                    $('#message').val('');
+                }
+            });
+
+            socket.on('receive_message', function(data) {
+                $('#chat').append(`<div class="message"><strong>${data.username}:</strong> ${data.message}</div>`);
+            });
+
+            // Предположим, что вы запросите пользователей с сервера
+            const users = ['user1', 'user2', 'user3']; // для примера
+            users.forEach(user => {
+                $('#recipient').append(new Option(user, user));
+            });
+        });
+    </script>
+</body>
+</html>
